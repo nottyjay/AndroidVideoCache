@@ -1,8 +1,18 @@
 package com.danikula.videocache;
 
+import android.util.Log;
+
+import com.danikula.videocache.bean.WebResource;
+import com.danikula.videocache.file.FileCache;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static com.danikula.videocache.Preconditions.checkNotNull;
@@ -155,6 +165,31 @@ class ProxyCache {
         synchronized (stopLock) {
             if (!isStopped() && cache.available() == source.length()) {
                 cache.complete();
+                if(source instanceof HttpUrlSource){
+                    HttpUrlSource source1 = (HttpUrlSource) source;
+                    WebResource webResource = WebResource.analysis(source1.getUrl());
+                    if(source1.getUrl().indexOf(".m3u8") != -1 && (cache instanceof FileCache)){
+                        byte[] fileContentBytes = new byte[(int) cache.available()];
+                        if(cache.read(fileContentBytes, 0, (int) cache.available()) != -1){
+                            try {
+                                BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(fileContentBytes)));
+                                String content = null;
+                                FileOutputStream fileOutputStream = new FileOutputStream(((FileCache) cache).getFile());
+                                while((content = bufferedReader.readLine()) != null){
+                                    if(content.indexOf(".ts") != -1){
+                                        content = webResource.getSchema() + webResource.getHostName() + "/" + webResource.getPathName() + content;
+                                    }
+                                    content += "\r\n";
+                                    Log.d(HttpUrlSource.class.getName(), content);
+                                    fileOutputStream.write(content.getBytes());
+                                }
+
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    }
+                }
             }
         }
     }
