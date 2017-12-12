@@ -175,9 +175,10 @@ class ProxyCache {
                                 BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(fileContentBytes)));
                                 String content = null;
                                 FileOutputStream fileOutputStream = new FileOutputStream(((FileCache) cache).getFile());
+                                HttpProxyCacheServer server = HttpProxyCacheServer.getInstance();
                                 while((content = bufferedReader.readLine()) != null){
                                     if(content.indexOf(".ts") != -1){
-                                        content = webResource.getSchema() + webResource.getHostName() + "/" + webResource.getPathName() + content;
+                                        content = server.getProxyUrl(webResource.getSchema() + webResource.getHostName() + webResource.getPathName() + content);
                                     }
                                     content += "\r\n";
                                     Log.d(HttpUrlSource.class.getName(), content);

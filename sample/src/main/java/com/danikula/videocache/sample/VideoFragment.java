@@ -1,5 +1,6 @@
 package com.danikula.videocache.sample;
 
+import android.media.MediaPlayer;
 import android.os.Handler;
 import android.os.Message;
 import android.support.v4.app.Fragment;
@@ -56,10 +57,15 @@ public class VideoFragment extends Fragment implements CacheListener {
     private void startVideo() {
         HttpProxyCacheServer proxy = App.getProxy(getActivity());
         proxy.registerCacheListener(this, url);
-        String proxyUrl = proxy.getProxyUrl(url);
+        String proxyUrl = proxy.getProxyUrl(url, false);
         Log.d(LOG_TAG, "Use proxy url " + proxyUrl + " instead of original url " + url);
         videoView.setVideoPath(proxyUrl);
-        videoView.start();
+        videoView.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+            @Override
+            public void onPrepared(MediaPlayer mp) {
+                videoView.start();
+            }
+        });
     }
 
     @Override

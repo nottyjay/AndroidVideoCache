@@ -4,6 +4,7 @@ import android.app.Application;
 import android.content.Context;
 
 import com.danikula.videocache.HttpProxyCacheServer;
+import com.danikula.videocache.file.NormalFileNameGenerator;
 
 /**
  * @author Alexey Danilov (danikula@gmail.com).
@@ -19,6 +20,7 @@ public class App extends Application {
 
     private HttpProxyCacheServer newProxy() {
         return new HttpProxyCacheServer.Builder(this)
+                .fileNameGenerator(new NormalFileNameGenerator())
                 .cacheDirectory(Utils.getVideoCacheDir(this))
                 .build();
     }

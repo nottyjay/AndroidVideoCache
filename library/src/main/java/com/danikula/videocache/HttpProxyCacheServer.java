@@ -56,6 +56,8 @@ public class HttpProxyCacheServer {
     private static final Logger LOG = LoggerFactory.getLogger("HttpProxyCacheServer");
     private static final String PROXY_HOST = "127.0.0.1";
 
+    private static HttpProxyCacheServer instance = null;
+
     private final Object clientsLock = new Object();
     private final ExecutorService socketProcessor = Executors.newFixedThreadPool(8);
     private final Map<String, HttpProxyCacheServerClients> clientsMap = new ConcurrentHashMap<>();
@@ -82,10 +84,15 @@ public class HttpProxyCacheServer {
             startSignal.await(); // freeze thread, wait for server starts
             this.pinger = new Pinger(PROXY_HOST, port);
             LOG.info("Proxy cache server started. Is it alive? " + isAlive());
+            HttpProxyCacheServer.instance = this;
         } catch (IOException | InterruptedException e) {
             socketProcessor.shutdown();
             throw new IllegalStateException("Error starting local proxy server", e);
         }
+    }
+
+    public static HttpProxyCacheServer getInstance(){
+        return instance;
     }
 
     /**
